@@ -3,19 +3,28 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:tflite_flutter/tflite_flutter.dart'; // Import tflite_flutter
-import 'package:flutter_image_compress/flutter_image_compress.dart'; // Import flutter_image_compress
+import 'package:tflite_flutter/tflite_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   @override
-  State<StatefulWidget> createState() {
-    return _MyAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomeScreen(),
+    );
   }
 }
 
-class _MyAppState extends State<MyApp> {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   XFile? _image;
 
   Future getImage(bool isCamera) async {
@@ -72,56 +81,60 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "Text Identification",
-            style: TextStyle(
-                color: const Color.fromARGB(255, 141, 0, 0),
-                fontSize: 25,
-                fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: Color.fromARGB(255, 255, 255, 255),
-          elevation: 5,
-          shadowColor: Colors.blue,
-          centerTitle: true,
-        ),
-        body: Center(
-          child: Column(
-            children: <Widget>[
-              IconButton(
-                icon: Icon(Icons.insert_drive_file),
-                onPressed: () {
-                  getImage(false); // gallery
-                },
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Text Identification"),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration:
+                  BoxDecoration(color: Color.fromRGBO(238, 255, 209, 1)),
+              child: Text(
+                'Drive App',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
               ),
-              SizedBox(height: 10.0),
-              IconButton(
-                icon: Icon(Icons.camera_alt),
-                onPressed: () {
-                  getImage(true);
-                },
-              ),
-              _image == null
-                  ? Container()
-                  : Column(
-                      children: <Widget>[
-                        Image.file(
-                          File(_image!.path),
-                          height: 300.0,
-                          width: 300.0,
-                        ),
-                        TextButton(
-                          child: Text('Perform Task'),
-                          onPressed: performTaskOnImage,
-                        ),
-                      ],
-                    )
-            ],
-          ),
+            ),
+            ListTile(
+              leading: Icon(Icons.insert_drive_file),
+              title: Text('Gallery'),
+              onTap: () {
+                getImage(false);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt),
+              title: Text('Camera'),
+              onTap: () {
+                getImage(true);
+                Navigator.pop(context);
+              },
+            ),
+          ],
         ),
+      ),
+      body: Center(
+        child: _image == null
+            ? Container()
+            : Column(
+                children: <Widget>[
+                  Expanded(
+                    child: Image.file(
+                      File(_image!.path),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: performTaskOnImage,
+                    child: Text('Perform Task'),
+                  ),
+                ],
+              ),
       ),
     );
   }
